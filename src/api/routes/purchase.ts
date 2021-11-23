@@ -12,6 +12,6 @@ router.route("/:id")
 
 router.route("/")
     .get(purchaseRules.filter, validate, filter.purchase, purchaseController.purchases)
-    .put(purchaseRules.update, validate, purchaseController.update)
+    .patch(purchaseRules.update, validate, purchaseController.update)
     .post(purchaseRules.create, validate, purchaseController.create);
 

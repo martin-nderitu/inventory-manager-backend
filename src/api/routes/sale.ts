@@ -15,6 +15,6 @@ router.route("/:id")
 
 router.route("/")
     .get(saleRules.filter, validate, filter.sale, saleController.sales)
-    .put(saleRules.update, validate, saleController.update)
+    .patch(saleRules.update, validate, saleController.update)
     .post(saleRules.create, validate, saleController.create);
 

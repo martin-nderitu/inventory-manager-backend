@@ -12,5 +12,5 @@ router.route("/:id")
 
 router.route("/")
     .get(categoryRules.filter, validate, filter.category, categoryController.categories)
-    .put(categoryRules.update, validate, categoryController.update)
+    .patch(categoryRules.update, validate, categoryController.update)
     .post(categoryRules.create, validate, categoryController.create);

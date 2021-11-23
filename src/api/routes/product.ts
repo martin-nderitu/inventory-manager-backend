@@ -12,5 +12,5 @@ router.route("/:id")
 
 router.route("/")
     .get(productRules.filter, validate, filter.product, productController.products)
-    .put(productRules.update, validate, productController.update)
+    .patch(productRules.update, validate, productController.update)
     .post(productRules.create, validate, productController.create);

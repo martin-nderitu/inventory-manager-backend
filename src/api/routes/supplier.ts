@@ -12,6 +12,6 @@ router.route("/:id")
 
 router.route("/")
     .get(supplierRules.filter, validate, filter.supplier, supplierController.suppliers)
-    .put(supplierRules.update, validate, supplierController.update)
+    .patch(supplierRules.update, validate, supplierController.update)
     .post(supplierRules.create, validate, supplierController.create);
 
