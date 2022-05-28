@@ -19,5 +19,19 @@ Backend for [react redux inventory manager](https://github.com/martin-nderitu/re
    DB_PASSWORD=
    DB_DIALECT=
    ```
+   For example:
+   ```
+   PORT=5000
+   NODE_ENV=development
+   DB_NAME=your_database_name
+   TEST_DB_NAME=your_test_database_name
+   DB_HOST=localhost
+   DB_USER=your_database_user
+   DB_PASSWORD=your_database_password
+   DB_DIALECT=postgres
+   ```
+   NODE_ENV is either development, test, or production\
+   DB_DIALECT is either postgres or mariadb
+   
 
-4. Run `npm start` or `yarn start` to start the app
+5. Run `npm start` or `yarn start` to start the app
