@@ -1,51 +1,96 @@
-import Seq, {
-    Sequelize,
-    Model,
+import {
+    Association,
     BelongsToGetAssociationMixin,
     BelongsToSetAssociationMixin,
     BelongsToCreateAssociationMixin,
+    DataTypes,
     Optional,
+    Sequelize,
+    Model,
 } from "sequelize";
-import {ProductAttributes, ProductInstance} from "./product.js";
-import {SupplierAttributes, SupplierInstance} from "./supplier.js";
+import {Product} from "./product.js";
+import {Supplier} from "./supplier.js";
+import {Sale} from "./sale";
+import {Transfer} from "./transfer";
+import {Models} from "./types.js";
 
-const {DataTypes} = Seq;
-
-export interface PurchaseAttributes {
+interface PurchaseAttributes {
     id: string;
     quantity: number;
     unitCost: number;
     unitPrice: number;
     location: string;
-    readonly createdAt?: Date;
-    readonly updatedAt?: Date;
 
     // foreign keys
     productId?: string;
     supplierId?: string;
-
-    // to access associations when eager loading
-    product?: ProductAttributes | ProductAttributes["id"][];
-    supplier?: SupplierAttributes | SupplierAttributes["id"][];
 }
 
 interface PurchaseCreationAttributes extends Optional<PurchaseAttributes, "id"> {}
 
-export interface PurchaseInstance extends Model<PurchaseAttributes, PurchaseCreationAttributes>, PurchaseAttributes {
-    dataValues?: any;
+export class Purchase extends Model<PurchaseAttributes, PurchaseCreationAttributes>
+    implements PurchaseAttributes {
+    declare id: string;
+    declare quantity: number;
+    declare unitCost: number;
+    declare unitPrice: number;
+    declare location: string;
+
+    // timestamps
+    declare readonly createdAt: Date;
+    declare readonly updatedAt: Date;
+    
+    // foreign keys
+    productId?: string;
+    supplierId?: string;
+
+    declare dataValues?: Purchase;
 
     // model associations
-    getProduct: BelongsToGetAssociationMixin<ProductInstance>;
-    setProduct: BelongsToSetAssociationMixin<ProductInstance, ProductInstance["id"]>;
-    createProduct: BelongsToCreateAssociationMixin<ProductAttributes>;
+    declare getProduct: BelongsToGetAssociationMixin<Product>;
+    declare setProduct: BelongsToSetAssociationMixin<Product, Product["id"]>;
+    declare createProduct: BelongsToCreateAssociationMixin<Product>;
 
-    getSupplier: BelongsToGetAssociationMixin<SupplierInstance>;
-    setSupplier: BelongsToSetAssociationMixin<SupplierInstance, SupplierInstance["id"]>;
-    createSupplier: BelongsToCreateAssociationMixin<SupplierAttributes>;
+    declare getSupplier: BelongsToGetAssociationMixin<Supplier>;
+    declare setSupplier: BelongsToSetAssociationMixin<Supplier, Supplier["id"]>;
+    declare createSupplier: BelongsToCreateAssociationMixin<Supplier>;
+
+
+    // possible inclusions
+    declare readonly products?: Product[];
+    declare readonly suppliers?: Supplier[];
+    declare readonly sales?: Sale[];
+    declare readonly transfers?: Transfer[];
+
+    // associations
+    declare static associations: {
+        products: Association<Purchase, Product>;
+        suppliers: Association<Purchase, Supplier>;
+        sales: Association<Purchase, Sale>;
+        transfers: Association<Purchase, Transfer>;
+    }
+
+    static associate (models: Models) {
+        this.belongsTo(models.Product, {
+            as: "product",
+            foreignKey: {
+                name: "productId",
+                allowNull: false
+            }
+        });
+
+        this.belongsTo(models.Supplier, {
+            as: "supplier",
+            foreignKey: {
+                name: "supplierId",
+                allowNull: false
+            }
+        });
+    }
 }
 
 export const PurchaseFactory = (sequelize: Sequelize) => {
-    const Purchase = sequelize.define<PurchaseInstance>("Purchase", {
+    return Purchase.init({
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -75,26 +120,6 @@ export const PurchaseFactory = (sequelize: Sequelize) => {
         }
     }, {
         tableName: "purchases",
+        sequelize,
     });
-
-    // @ts-ignore
-    Purchase.associate = (models: any) => {
-        Purchase.belongsTo(models.Product, {
-            as: "product",
-            foreignKey: {
-                name: "productId",
-                allowNull: false
-            }
-        });
-
-        Purchase.belongsTo(models.Supplier, {
-            as: "supplier",
-            foreignKey: {
-                name: "supplierId",
-                allowNull: false
-            }
-        });
-    }
-    return Purchase;
 }
-

@@ -3,7 +3,6 @@ import db from "../../models/index.js";
 
 const {Supplier} = db;
 
-
 async function suppliers(req: Request, res: Response, next: NextFunction) {
     try {
         const { filter, pagination } = res.locals;

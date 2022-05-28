@@ -1,7 +1,5 @@
-import Seq, {
-    Sequelize,
-    Model,
-    Optional,
+import {
+    Association,
     HasManyGetAssociationsMixin,
     HasManyCountAssociationsMixin,
     HasManyHasAssociationMixin,
@@ -9,44 +7,75 @@ import Seq, {
     HasManySetAssociationsMixin,
     HasManyAddAssociationMixin,
     HasManyAddAssociationsMixin,
-    HasManyRemoveAssociationMixin, HasManyRemoveAssociationsMixin, HasManyCreateAssociationMixin,
+    HasManyRemoveAssociationMixin,
+    HasManyRemoveAssociationsMixin,
+    HasManyCreateAssociationMixin,
+    DataTypes,
+    Sequelize,
+    Model,
+    Optional,
 } from "sequelize";
-import {PurchaseAttributes, PurchaseInstance} from "./purchase.js";
+import {Purchase} from "./purchase.js";
+import {Models} from "./types";
 
-const {DataTypes} = Seq;
-
-export interface SupplierAttributes {
+interface SupplierAttributes {
     id: string;
     name: string;
     phone: string;
     email?: string;
-    readonly createdAt?: Date;
-    readonly updatedAt?: Date;
-
-    // to access associations when eager loading
-    purchases?: PurchaseAttributes[] | PurchaseAttributes["id"][];
 }
 
 interface SupplierCreationAttributes extends Optional<SupplierAttributes, "id"> {}
 
-export interface SupplierInstance extends Model<SupplierAttributes, SupplierCreationAttributes>, SupplierAttributes {
-    dataValues?: any;
+export class Supplier extends Model<SupplierAttributes, SupplierCreationAttributes>
+    implements SupplierAttributes {
+    declare id: string;
+    declare name: string;
+    declare phone: string;
+    declare email?: string;
+
+    // timestamps
+    declare readonly createdAt: Date;
+    declare readonly updatedAt: Date;
+
+    declare dataValues?: Supplier;
 
     // model associations
-    getPurchases: HasManyGetAssociationsMixin<PurchaseInstance>;
-    countPurchases: HasManyCountAssociationsMixin;
-    hasPurchase: HasManyHasAssociationMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    hasPurchases: HasManyHasAssociationsMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    setPurchases: HasManySetAssociationsMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    addPurchase: HasManyAddAssociationMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    addPurchases: HasManyAddAssociationsMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    removePurchase: HasManyRemoveAssociationMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    removePurchases: HasManyRemoveAssociationsMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    createPurchase: HasManyCreateAssociationMixin<PurchaseAttributes>;
+    declare getPurchases: HasManyGetAssociationsMixin<Purchase>;
+    declare countPurchases: HasManyCountAssociationsMixin;
+    declare hasPurchase: HasManyHasAssociationMixin<Purchase, Purchase["id"]>;
+    declare hasPurchases: HasManyHasAssociationsMixin<Purchase, Purchase["id"]>;
+    declare setPurchases: HasManySetAssociationsMixin<Purchase, Purchase["id"]>;
+    declare addPurchase: HasManyAddAssociationMixin<Purchase, Purchase["id"]>;
+    declare addPurchases: HasManyAddAssociationsMixin<Purchase, Purchase["id"]>;
+    declare removePurchase: HasManyRemoveAssociationMixin<Purchase, Purchase["id"]>;
+    declare removePurchases: HasManyRemoveAssociationsMixin<Purchase, Purchase["id"]>;
+    declare createPurchase: HasManyCreateAssociationMixin<Purchase>;
+
+
+    // possible inclusions
+    declare readonly purchases?: Purchase[];
+
+    // associations
+    declare static associations: {
+        purchases: Association<Supplier, Purchase>;
+    }
+
+    static associate (models: Models) {
+        this.hasMany(models.Purchase, {
+            as: "purchases",
+            foreignKey: {
+                name: "supplierId",
+                allowNull: false
+            },
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE"
+        });
+    }
 }
 
 export const SupplierFactory = (sequelize: Sequelize) => {
-    const Supplier = sequelize.define<SupplierInstance>("Supplier", {
+    return Supplier.init({
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -71,20 +100,6 @@ export const SupplierFactory = (sequelize: Sequelize) => {
         },
     }, {
         tableName: "suppliers",
+        sequelize,
     });
-
-    // @ts-ignore
-    Supplier.associate = (models: any) => {
-        Supplier.hasMany(models.Purchase, {
-            as: "purchases",
-            foreignKey: {
-                name: "supplierId",
-                allowNull: false
-            },
-            onDelete: "CASCADE",
-            onUpdate: "CASCADE"
-        });
-    }
-    return Supplier;
 }
-

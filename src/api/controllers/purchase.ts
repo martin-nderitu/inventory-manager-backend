@@ -3,7 +3,6 @@ import db from "../../models/index.js";
 
 const {sequelize, Purchase, Product, Supplier} = db;
 
-
 async function purchases(req: Request, res: Response, next: NextFunction) {
     try {
         const { filter, pagination} = res.locals;
@@ -36,7 +35,7 @@ async function purchases(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-async function create(req: Request, res: Response, next: NextFunction) {
+async function create(req: Request, res: Response) {
     try {
         const { supplierId, productId, quantity, unitCost, unitPrice, location } = req.body;
         const supplier = Supplier.findByPk(supplierId);
@@ -58,7 +57,7 @@ async function create(req: Request, res: Response, next: NextFunction) {
                 supplierId, productId, quantity, unitCost, unitPrice, location
             }, { transaction: t });
 
-            let { store, counter } = product.dataValues;
+            let { store, counter } = product.dataValues!;
             if (location === "store") { store += quantity }
             if (location === "counter") { counter += quantity }
             if (store < 0) {
@@ -97,7 +96,7 @@ async function read(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-async function update(req: Request, res: Response, next: NextFunction) {
+async function update(req: Request, res: Response) {
     try {
         const { id, supplierId, productId, quantity, unitCost, unitPrice, location } = req.body;
         const purchase = await Purchase.findByPk(id);
@@ -122,9 +121,9 @@ async function update(req: Request, res: Response, next: NextFunction) {
         }
 
         return await sequelize.transaction(async (t) => {
-            let { store, counter } = product.dataValues;
-            const prevLocation = purchase.dataValues.location;
-            const prevQuantity = purchase.dataValues.quantity;
+            let { store, counter } = product.dataValues!;
+            const prevLocation = purchase.dataValues!.location;
+            const prevQuantity = purchase.dataValues!.quantity;
 
             if (prevLocation !== location) {
                 if (prevLocation === "store") { store -= prevQuantity }

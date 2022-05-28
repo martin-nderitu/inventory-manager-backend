@@ -3,7 +3,6 @@ import db from "../../models/index.js";
 
 const {sequelize, Transfer, Product} = db;
 
-
 async function transfers(req: Request, res: Response, next: NextFunction) {
     try {
         const {filter, pagination} = res.locals;
@@ -30,7 +29,7 @@ async function transfers(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-async function create(req: Request, res: Response, next: NextFunction) {
+async function create(req: Request, res: Response) {
     try {
         const { productId, quantity, source, destination } = req.body;
         const product = await Product.findByPk(productId);
@@ -39,7 +38,7 @@ async function create(req: Request, res: Response, next: NextFunction) {
                 error: "Product not found"
             });
         }
-        let {store, counter} = product.dataValues;
+        let {store, counter} = product.dataValues!;
 
         switch(source) {
             case "counter":

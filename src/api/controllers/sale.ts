@@ -3,7 +3,6 @@ import db from "../../models/index.js";
 
 const {sequelize, Sale, Product} = db;
 
-
 async function sales(req: Request, res: Response, next: NextFunction) {
     try {
         const { filter, pagination} = res.locals;
@@ -30,7 +29,7 @@ async function sales(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-async function create(req: Request, res: Response, next: NextFunction) {
+async function create(req: Request, res: Response) {
     try {
         const { productId, quantity } = req.body;
         const product = await Product.findByPk(productId);
@@ -38,16 +37,16 @@ async function create(req: Request, res: Response, next: NextFunction) {
             return res.status(400).json({
                 error: "Product not found"
             });
-        } else if (product.dataValues.counter < quantity) {
+        } else if (product.dataValues!.counter < quantity) {
             return res.status(400).json({
-                error: `Only ${product.dataValues.counter} items are left in counter`
+                error: `Only ${product.dataValues!.counter} items are left in counter`
             });
         }
 
         return await sequelize.transaction(async (t) => {
             const sale = await Sale.create({ productId, quantity }, { transaction: t });
             // deduct quantity items from product
-            const counter = product.dataValues.counter - quantity;
+            const counter = product.dataValues!.counter - quantity;
             const [affectedProductRows] = await Product.update({ counter }, {
                 where: { id: productId }, transaction: t
             });
@@ -61,7 +60,7 @@ async function create(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-async function cancelSale(req: Request, res: Response, next: NextFunction) {
+async function cancelSale(req: Request, res: Response) {
     try {
         const sale = await Sale.findByPk(req.params.id);
         if (sale === null) {
@@ -70,7 +69,7 @@ async function cancelSale(req: Request, res: Response, next: NextFunction) {
             });
         }
 
-        const product = await Product.findByPk(sale.dataValues.productId);
+        const product = await Product.findByPk(sale.dataValues!.productId);
         if (product === null) {
             return res.status(400).json({
                 error: "Product not found"
@@ -78,10 +77,10 @@ async function cancelSale(req: Request, res: Response, next: NextFunction) {
         }
 
         return await sequelize.transaction(async (t) => {
-            const counter = product.dataValues.counter + sale.dataValues.quantity;
+            const counter = product.dataValues!.counter + sale.dataValues!.quantity;
 
             const [affectedProductRows] = await Product.update({ counter }, {
-                where: { id: product.dataValues.id }, transaction: t
+                where: { id: product.dataValues!.id }, transaction: t
             });
             const affectedSaleRows = await Sale.destroy({
                 where: { id: req.params.id }, transaction: t
@@ -114,7 +113,7 @@ async function read(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-async function update(req: Request, res: Response, next: NextFunction) {
+async function update(req: Request, res: Response) {
     try {
         const { id, quantity } = req.body;
         const sale = await Sale.findByPk(id);
@@ -124,24 +123,24 @@ async function update(req: Request, res: Response, next: NextFunction) {
             });
         }
 
-        const product = await Product.findByPk(sale.dataValues.productId);
+        const product = await Product.findByPk(sale.dataValues!.productId);
         if (product === null) {
             return res.status(400).json({
                 error: "Product not found"
             });
         }
 
-        if (sale.dataValues.quantity === quantity) {
+        if (sale.dataValues!.quantity === quantity) {
             return res.status(200).json({
                 message: "Sale updated successfully"
             });
         }
 
         return await sequelize.transaction(async (t) => {
-            const counter = product.dataValues.counter + sale.dataValues.quantity - quantity;
+            const counter = product.dataValues!.counter + sale.dataValues!.quantity - quantity;
 
             const [affectedProductRows] = await Product.update({ counter }, {
-                where: { id: product.dataValues.id }, transaction: t
+                where: { id: product.dataValues!.id }, transaction: t
             });
             let [affectedSaleRows] = await Sale.update({ quantity }, {
                 where: { id }, transaction: t

@@ -1,43 +1,71 @@
-import Seq, {
-    Sequelize,
-    Model,
+import {
+    Association,
     BelongsToGetAssociationMixin,
     BelongsToSetAssociationMixin,
     BelongsToCreateAssociationMixin,
+    DataTypes,
     Optional,
+    Sequelize,
+    Model,
 } from "sequelize";
-import {ProductAttributes, ProductInstance} from "./product.js";
+import {Product} from "./product.js";
+import {Models} from "./types";
 
-const {DataTypes} = Seq;
-
-export interface TransferAttributes {
+interface TransferAttributes {
     id: string;
     quantity: number;
     source: string;
     destination: string;
-    readonly createdAt?: Date;
-    readonly updatedAt?: Date;
 
     // foreign key
     productId?: string;
-
-    // to access associations when eager loading
-    product?: ProductAttributes | ProductAttributes["id"][];
 }
 
 interface TransferCreationAttributes extends Optional<TransferAttributes, "id"> {}
 
-export interface TransferInstance extends Model<TransferAttributes, TransferCreationAttributes>, TransferAttributes {
-    dataValues?: any;
+export class Transfer extends Model<TransferAttributes, TransferCreationAttributes>
+    implements TransferAttributes {
+    declare id: string;
+    declare quantity: number;
+    declare source: string;
+    declare destination: string;
+
+    // timestamps
+    declare readonly createdAt: Date;
+    declare readonly updatedAt: Date;
+
+    // foreign key
+    productId?: string;
+
+    declare dataValues?: Transfer;
 
     // model associations
-    getProduct: BelongsToGetAssociationMixin<ProductInstance>;
-    setProduct: BelongsToSetAssociationMixin<ProductInstance, ProductInstance["id"]>;
-    createProduct: BelongsToCreateAssociationMixin<ProductAttributes>;
+    declare getProduct: BelongsToGetAssociationMixin<Product>;
+    declare setProduct: BelongsToSetAssociationMixin<Product, Product["id"]>;
+    declare createProduct: BelongsToCreateAssociationMixin<Product>;
+
+
+    // possible inclusions
+    declare readonly product?: Product;
+
+    // associations
+    declare static associations: {
+        product: Association<Transfer, Product>;
+    }
+
+    static associate (models: Models) {
+        this.belongsTo(models.Product, {
+            as: "product",
+            foreignKey: {
+                name: "productId",
+                allowNull: false
+            }
+        });
+    }
 }
 
 export const TransferFactory = (sequelize: Sequelize) => {
-    const Transfer = sequelize.define<TransferInstance>("Transfer", {
+    return Transfer.init({
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -60,18 +88,6 @@ export const TransferFactory = (sequelize: Sequelize) => {
         },
     }, {
         tableName: "transfers",
+        sequelize,
     });
-
-    // @ts-ignore
-    Transfer.associate = (models: any) => {
-        Transfer.belongsTo(models.Product, {
-            as: "product",
-            foreignKey: {
-                name: "productId",
-                allowNull: false
-            }
-        });
-    }
-    return Transfer;
 }
-

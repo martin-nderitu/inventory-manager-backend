@@ -1,27 +1,29 @@
-import Seq, {
-    Sequelize,
-    Model,
+import {
+    Association,
+    BelongsToCreateAssociationMixin,
     BelongsToGetAssociationMixin,
     BelongsToSetAssociationMixin,
-    BelongsToCreateAssociationMixin,
-    Optional,
-    HasManyGetAssociationsMixin,
-    HasManyCountAssociationsMixin,
-    HasManyHasAssociationMixin,
-    HasManyHasAssociationsMixin,
-    HasManySetAssociationsMixin,
     HasManyAddAssociationMixin,
     HasManyAddAssociationsMixin,
-    HasManyRemoveAssociationMixin, HasManyRemoveAssociationsMixin, HasManyCreateAssociationMixin,
+    HasManyCountAssociationsMixin, HasManyCreateAssociationMixin,
+    HasManyGetAssociationsMixin,
+    HasManyHasAssociationMixin,
+    HasManyHasAssociationsMixin,
+    HasManyRemoveAssociationMixin,
+    HasManyRemoveAssociationsMixin,
+    HasManySetAssociationsMixin,
+    DataTypes,
+    Model,
+    Optional,
+    Sequelize,
 } from "sequelize";
-import {CategoryAttributes, CategoryInstance} from "./category.js";
-import {PurchaseAttributes, PurchaseInstance} from "./purchase.js";
-import {SaleAttributes, SaleInstance} from "./sale.js";
-import {TransferAttributes, TransferInstance} from "./transfer.js";
+import {Category} from "./category.js";
+import {Purchase} from "./purchase.js";
+import {Sale} from "./sale.js";
+import {Transfer} from "./transfer.js";
+import {Models} from "./types.js";
 
-const {DataTypes} = Seq;
-
-export interface ProductAttributes {
+interface ProductAttributes {
     id: string;
     name: string;
     unitCost: number;
@@ -29,66 +31,130 @@ export interface ProductAttributes {
     store: number;
     counter: number;
     description?: string;
-    readonly createdAt?: Date;
-    readonly updatedAt?: Date;
-
+    
     // foreign key
     categoryId?: string;
-
-    // to access associations when eager loading
-    category?: CategoryAttributes | CategoryAttributes["id"][];
-
-    purchases?: PurchaseAttributes[] | PurchaseAttributes["id"][];
-    sales?: SaleAttributes[] | SaleAttributes["id"][];
-    transfers?: TransferAttributes[] | TransferAttributes["id"][];
 }
 
 interface ProductCreationAttributes extends Optional<ProductAttributes, "id"> {}
 
-export interface ProductInstance extends Model<ProductAttributes, ProductCreationAttributes>, ProductAttributes {
-    dataValues?: any;
+export class Product extends Model<ProductAttributes, ProductCreationAttributes>
+    implements ProductAttributes {
+    declare id: string;
+    declare name: string;
+    declare unitCost: number;
+    declare unitPrice: number;
+    declare store: number;
+    declare counter: number;
+    declare description?: string;
+
+    // timestamps
+    declare readonly createdAt: Date;
+    declare readonly updatedAt: Date;
+    
+    // foreign key
+    declare categoryId?: string;
+
+    declare dataValues?: Product;
 
     // model associations
-    getCategory: BelongsToGetAssociationMixin<CategoryInstance>;
-    setCategory: BelongsToSetAssociationMixin<CategoryInstance, CategoryInstance["id"]>;
-    createCategory: BelongsToCreateAssociationMixin<CategoryAttributes>;
+    declare getCategory: BelongsToGetAssociationMixin<Category>;
+    declare setCategory: BelongsToSetAssociationMixin<Category, Category["id"]>;
+    declare createCategory: BelongsToCreateAssociationMixin<Category>;
 
-    getPurchases: HasManyGetAssociationsMixin<PurchaseInstance>;
-    countPurchases: HasManyCountAssociationsMixin;
-    hasPurchase: HasManyHasAssociationMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    hasPurchases: HasManyHasAssociationsMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    setPurchases: HasManySetAssociationsMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    addPurchase: HasManyAddAssociationMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    addPurchases: HasManyAddAssociationsMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    removePurchase: HasManyRemoveAssociationMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    removePurchases: HasManyRemoveAssociationsMixin<PurchaseInstance, PurchaseInstance["id"]>;
-    createPurchase: HasManyCreateAssociationMixin<PurchaseAttributes>;
+    declare getPurchases: HasManyGetAssociationsMixin<Purchase>;
+    declare countPurchases: HasManyCountAssociationsMixin;
+    declare hasPurchase: HasManyHasAssociationMixin<Purchase, Purchase["id"]>;
+    declare hasPurchases: HasManyHasAssociationsMixin<Purchase, Purchase["id"]>;
+    declare setPurchases: HasManySetAssociationsMixin<Purchase, Purchase["id"]>;
+    declare addPurchase: HasManyAddAssociationMixin<Purchase, Purchase["id"]>;
+    declare addPurchases: HasManyAddAssociationsMixin<Purchase, Purchase["id"]>;
+    declare removePurchase: HasManyRemoveAssociationMixin<Purchase, Purchase["id"]>;
+    declare removePurchases: HasManyRemoveAssociationsMixin<Purchase, Purchase["id"]>;
+    declare createPurchase: HasManyCreateAssociationMixin<Purchase>;
 
-    getSales: HasManyGetAssociationsMixin<SaleInstance>;
-    countSales: HasManyCountAssociationsMixin;
-    hasSale: HasManyHasAssociationMixin<SaleInstance, SaleInstance["id"]>;
-    hasSales: HasManyHasAssociationsMixin<SaleInstance, SaleInstance["id"]>;
-    setSales: HasManySetAssociationsMixin<SaleInstance, SaleInstance["id"]>;
-    addSale: HasManyAddAssociationMixin<SaleInstance, SaleInstance["id"]>;
-    addSales: HasManyAddAssociationsMixin<SaleInstance, SaleInstance["id"]>;
-    removeSale: HasManyRemoveAssociationMixin<SaleInstance, SaleInstance["id"]>;
-    removeSales: HasManyRemoveAssociationsMixin<SaleInstance, SaleInstance["id"]>;
-    createSale: HasManyCreateAssociationMixin<SaleAttributes>;
+    declare getSales: HasManyGetAssociationsMixin<Sale>;
+    declare countSales: HasManyCountAssociationsMixin;
+    declare hasSale: HasManyHasAssociationMixin<Sale, Sale["id"]>;
+    declare hasSales: HasManyHasAssociationsMixin<Sale, Sale["id"]>;
+    declare setSales: HasManySetAssociationsMixin<Sale, Sale["id"]>;
+    declare addSale: HasManyAddAssociationMixin<Sale, Sale["id"]>;
+    declare addSales: HasManyAddAssociationsMixin<Sale, Sale["id"]>;
+    declare removeSale: HasManyRemoveAssociationMixin<Sale, Sale["id"]>;
+    declare removeSales: HasManyRemoveAssociationsMixin<Sale, Sale["id"]>;
+    declare createSale: HasManyCreateAssociationMixin<Sale>;
 
-    getTransfers: HasManyGetAssociationsMixin<TransferInstance>;
-    countTransfers: HasManyCountAssociationsMixin;
-    hasTransfer: HasManyHasAssociationMixin<TransferInstance, TransferInstance["id"]>;
-    hasTransfers: HasManyHasAssociationsMixin<TransferInstance, TransferInstance["id"]>;
-    setTransfers: HasManySetAssociationsMixin<TransferInstance, TransferInstance["id"]>;
-    addTransfer: HasManyAddAssociationMixin<TransferInstance, TransferInstance["id"]>;
-    addTransfers: HasManyAddAssociationsMixin<TransferInstance, TransferInstance["id"]>;
-    removeTransfer: HasManyRemoveAssociationMixin<TransferInstance, TransferInstance["id"]>;
-    removeTransfers: HasManyRemoveAssociationsMixin<TransferInstance, TransferInstance["id"]>;
-    createTransfer: HasManyCreateAssociationMixin<TransferAttributes>;
+    declare getTransfers: HasManyGetAssociationsMixin<Transfer>;
+    declare countTransfers: HasManyCountAssociationsMixin;
+    declare hasTransfer: HasManyHasAssociationMixin<Transfer, Transfer["id"]>;
+    declare hasTransfers: HasManyHasAssociationsMixin<Transfer, Transfer["id"]>;
+    declare setTransfers: HasManySetAssociationsMixin<Transfer, Transfer["id"]>;
+    declare addTransfer: HasManyAddAssociationMixin<Transfer, Transfer["id"]>;
+    declare addTransfers: HasManyAddAssociationsMixin<Transfer, Transfer["id"]>;
+    declare removeTransfer: HasManyRemoveAssociationMixin<Transfer, Transfer["id"]>;
+    declare removeTransfers: HasManyRemoveAssociationsMixin<Transfer, Transfer["id"]>;
+    declare createTransfer: HasManyCreateAssociationMixin<Transfer>;
+
+
+    // possible inclusions
+    declare readonly category?: Category;
+    declare readonly purchases?: Purchase[];
+    declare readonly sales?: Sale[];
+    declare readonly transfers?: Transfer[];
+
+    // associations
+    declare static associations: {
+        category: Association<Product, Category>;
+        purchases: Association<Product, Purchase>;
+        sales: Association<Product, Sale>;
+        transfers: Association<Product, Transfer>;
+    }
+
+    static associate (models: Models) {
+        this.belongsTo(models.Category, {
+            as: "category",
+            foreignKey: {
+                name: "categoryId",
+                allowNull: false
+            },
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE",
+        });
+
+        this.hasMany(models.Purchase, {
+            as: "purchases",
+            foreignKey: {
+                name: "productId",
+                allowNull: false
+            },
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE"
+        });
+
+        this.hasMany(models.Sale, {
+            as: "sales",
+            foreignKey: {
+                name: "productId",
+                allowNull: false
+            },
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE"
+        });
+
+        this.hasMany(models.Transfer, {
+            as: "transfers",
+            foreignKey: {
+                name: "productId",
+                allowNull: false
+            },
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE"
+        });
+    }
 }
 
 export const ProductFactory = (sequelize: Sequelize) => {
-    const Product = sequelize.define<ProductInstance>("Product", {
+    return Product.init({
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -128,48 +194,6 @@ export const ProductFactory = (sequelize: Sequelize) => {
         },
     }, {
         tableName: "products",
+        sequelize,
     });
-
-    // @ts-ignore
-    Product.associate = (models: any) => {
-        Product.belongsTo(models.Category, {
-            as: "category",
-            foreignKey: {
-                name: "categoryId",
-                allowNull: false
-            }
-        });
-
-        Product.hasMany(models.Purchase, {
-            as: "purchases",
-            foreignKey: {
-                name: "productId",
-                allowNull: false
-            },
-            onDelete: "CASCADE",
-            onUpdate: "CASCADE"
-        });
-
-        Product.hasMany(models.Sale, {
-            as: "sales",
-            foreignKey: {
-                name: "productId",
-                allowNull: false
-            },
-            onDelete: "CASCADE",
-            onUpdate: "CASCADE"
-        });
-
-        Product.hasMany(models.Transfer, {
-            as: "transfers",
-            foreignKey: {
-                name: "productId",
-                allowNull: false
-            },
-            onDelete: "CASCADE",
-            onUpdate: "CASCADE"
-        });
-    }
-    return Product;
 }
-

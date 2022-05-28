@@ -1,41 +1,66 @@
-import Seq, {
+import {
     Sequelize,
     Model,
     BelongsToGetAssociationMixin,
     BelongsToSetAssociationMixin,
     BelongsToCreateAssociationMixin,
-    Optional,
+    DataTypes,
+    Optional, Association,
 } from "sequelize";
-import {ProductAttributes, ProductInstance} from "./product.js";
+import {Product} from "./product.js";
+import {Models} from "./types.js";
 
-const {DataTypes} = Seq;
-
-export interface SaleAttributes {
+interface SaleAttributes {
     id: string;
     quantity: number;
-    readonly createdAt?: Date;
-    readonly updatedAt?: Date;
 
     // foreign key
     productId?: string;
-
-    // to access associations when eager loading
-    product?: ProductAttributes | ProductAttributes["id"][];
 }
 
 interface SaleCreationAttributes extends Optional<SaleAttributes, "id"> {}
 
-export interface SaleInstance extends Model<SaleAttributes, SaleCreationAttributes>, SaleAttributes {
-    dataValues?: any;
+export class Sale extends Model<SaleAttributes, SaleCreationAttributes>
+    implements SaleAttributes {
+    declare id: string;
+    declare quantity: number;
+
+    // timestamps
+    declare readonly createdAt: Date;
+    declare readonly updatedAt: Date;
+
+    // foreign keys
+    productId?: string;
+
+    declare dataValues?: Sale;
 
     // model associations
-    getProduct: BelongsToGetAssociationMixin<ProductInstance>;
-    setProduct: BelongsToSetAssociationMixin<ProductInstance, ProductInstance["id"]>;
-    createProduct: BelongsToCreateAssociationMixin<ProductAttributes>;
+    declare getProduct: BelongsToGetAssociationMixin<Product>;
+    declare setProduct: BelongsToSetAssociationMixin<Product, Product["id"]>;
+    declare createProduct: BelongsToCreateAssociationMixin<Product>;
+
+
+    // possible inclusions
+    declare readonly products?: Product[];
+
+    // associations
+    declare static associations: {
+        products: Association<Sale, Product>;
+    }
+
+    static associate (models: Models) {
+        this.belongsTo(models.Product, {
+            as: "product",
+            foreignKey: {
+                name: "productId",
+                allowNull: false
+            }
+        });
+    }
 }
 
 export const SaleFactory = (sequelize: Sequelize) => {
-    const Sale = sequelize.define<SaleInstance>("Sale", {
+    return Sale.init({
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -50,18 +75,6 @@ export const SaleFactory = (sequelize: Sequelize) => {
         },
     }, {
         tableName: "sales",
+        sequelize,
     });
-
-    // @ts-ignore
-    Sale.associate = (models: any) => {
-        Sale.belongsTo(models.Product, {
-            as: "product",
-            foreignKey: {
-                name: "productId",
-                allowNull: false
-            }
-        });
-    }
-    return Sale;
 }
-

@@ -1,4 +1,5 @@
-import Seq, {
+import {
+    Association,
     HasManyAddAssociationMixin,
     HasManyAddAssociationsMixin,
     HasManyCountAssociationsMixin,
@@ -9,45 +10,70 @@ import Seq, {
     HasManyRemoveAssociationMixin,
     HasManyRemoveAssociationsMixin,
     HasManySetAssociationsMixin,
+    DataTypes,
     Model,
     Optional,
     Sequelize,
 } from "sequelize";
-import {ProductAttributes, ProductInstance} from "./product.js";
+import {Product} from "./product.js";
+import {Models} from "./types.js";
 
-const {DataTypes} = Seq;
-
-export interface CategoryAttributes {
+interface CategoryAttributes {
     id: string;
     name: string;
     description?: string;
-    readonly createdAt?: Date;
-    readonly updatedAt?: Date;
-
-    // to access associations when eager loading
-    products?: ProductAttributes[] | ProductAttributes["id"][];
 }
 
-export interface CategoryCreationAttributes extends Optional<CategoryAttributes, "id"> {}
+interface CategoryCreationAttributes extends Optional<CategoryAttributes, "id"> {}
 
-export interface CategoryInstance extends Model<CategoryAttributes, CategoryCreationAttributes>, CategoryAttributes {
-    dataValues?: any;
+export class Category extends Model<CategoryAttributes, CategoryCreationAttributes>
+    implements CategoryAttributes {
+    declare id: string;
+    declare name: string;
+    declare description?: string;
+
+    // timestamps
+    declare readonly createdAt: Date;
+    declare readonly updatedAt: Date;
+
+    declare dataValues?: Category;
 
     // model associations
-    getProducts: HasManyGetAssociationsMixin<ProductInstance>;
-    countProducts: HasManyCountAssociationsMixin;
-    hasProduct: HasManyHasAssociationMixin<ProductInstance, ProductInstance["id"]>;
-    hasProducts: HasManyHasAssociationsMixin<ProductInstance, ProductInstance["id"]>;
-    setProducts: HasManySetAssociationsMixin<ProductInstance, ProductInstance["id"]>;
-    addProduct: HasManyAddAssociationMixin<ProductInstance, ProductInstance["id"]>;
-    addProducts: HasManyAddAssociationsMixin<ProductInstance, ProductInstance["id"]>;
-    removeProduct: HasManyRemoveAssociationMixin<ProductInstance, ProductInstance["id"]>;
-    removeProducts: HasManyRemoveAssociationsMixin<ProductInstance, ProductInstance["id"]>;
-    createProduct: HasManyCreateAssociationMixin<ProductAttributes>;
+    declare getProducts: HasManyGetAssociationsMixin<Product>;
+    declare countProducts: HasManyCountAssociationsMixin;
+    declare hasProduct: HasManyHasAssociationMixin<Product, Product["id"]>;
+    declare hasProducts: HasManyHasAssociationsMixin<Product, Product["id"]>;
+    declare setProducts: HasManySetAssociationsMixin<Product, Product["id"]>;
+    declare addProduct: HasManyAddAssociationMixin<Product, Product["id"]>;
+    declare addProducts: HasManyAddAssociationsMixin<Product, Product["id"]>;
+    declare removeProduct: HasManyRemoveAssociationMixin<Product, Product["id"]>;
+    declare removeProducts: HasManyRemoveAssociationsMixin<Product, Product["id"]>;
+    declare createProduct: HasManyCreateAssociationMixin<Product>;
+
+
+    // possible inclusions
+    declare readonly products?: Product[];
+
+    // associations
+    declare static associations: {
+        products: Association<Category, Product>;
+    }
+
+    static associate (models: Models) {
+        this.hasMany(models.Product, {
+            as: "products",
+            foreignKey: {
+                name: "categoryId",
+                allowNull: false,
+            },
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE",
+        });
+    }
 }
 
 export const CategoryFactory = (sequelize: Sequelize) => {
-    const Category = sequelize.define<CategoryInstance>("Category", {
+    return Category.init({
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -58,7 +84,7 @@ export const CategoryFactory = (sequelize: Sequelize) => {
         name: {
             type: DataTypes.STRING,
             unique: true,
-            allowNull: false,
+            allowNull: false
         },
         description: {
             type: DataTypes.TEXT,
@@ -67,19 +93,9 @@ export const CategoryFactory = (sequelize: Sequelize) => {
         },
     }, {
         tableName: "categories",
+        sequelize,
+        underscored: true,
+        createdAt: "created_at",
+        updatedAt: "updated_at",
     });
-
-    // @ts-ignore
-    Category.associate = (models: any) => {
-        Category.hasMany(models.Product, {
-            as: "products",
-            foreignKey: {
-                name: "categoryId",
-                allowNull: false
-            },
-            onDelete: "CASCADE",
-            onUpdate: "CASCADE"
-        });
-    }
-    return Category;
 }
