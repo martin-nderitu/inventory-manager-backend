@@ -93,9 +93,6 @@ export const CategoryFactory = (sequelize: Sequelize) => {
         },
     }, {
         tableName: "categories",
-        sequelize,
-        underscored: true,
-        createdAt: "created_at",
-        updatedAt: "updated_at",
+        sequelize
     });
 }
