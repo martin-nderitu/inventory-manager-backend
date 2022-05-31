@@ -1,8 +1,8 @@
 import { default as express } from "express";
 import * as productController from "../controllers/product.js";
-import {productRules} from "../../middlewares/validationRules/product.js";
-import {validate} from "../../middlewares/validate.js";
-import filter from "../../middlewares/filter.js";
+import {productRules} from "../../middlewares/validators/rules/product.js";
+import {validate} from "../../middlewares/validators/validate.js";
+import filter from "../../middlewares/filters/index.js";
 
 export const router = express.Router();
 

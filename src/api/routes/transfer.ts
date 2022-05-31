@@ -1,8 +1,8 @@
 import { default as express } from "express";
 import * as transferController from "../controllers/transfer.js";
-import {transferRules} from "../../middlewares/validationRules/transfer.js";
-import {validate} from "../../middlewares/validate.js";
-import filter from "../../middlewares/filter.js";
+import {transferRules} from "../../middlewares/validators/rules/transfer.js";
+import {validate} from "../../middlewares/validators/validate.js";
+import filter from "../../middlewares/filters/index.js";
 
 export const router = express.Router();
 

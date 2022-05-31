@@ -1,22 +1,19 @@
 import {query, body} from "express-validator";
 import Sequelize from "sequelize";
-import db from "../../models/index.js";
-import {pagination} from "./common/pagination.js";
-import {sorting} from "./common/sorting.js";
-import {dateFrom, dateTo} from "./common/filters.js";
-import {destroy} from "./common/destroy.js";
-import {read} from "./common/read.js";
-import {ValidationRules} from "./index.js";
+import db from "../../../models/index.js";
+import {destroy} from "./libs/destroy.js";
+import {read} from "./libs/read.js";
+import filters from "./libs/filters.js";
 
 const Op = Sequelize.Op;
 const {Product, Sale} = db;
 
 const quantity = body("quantity")
-    .trim().escape().notEmpty().withMessage("Quantity of items purchased is required")
-    .isInt({ min: 1 }).withMessage("Quantity of items purchased must be greater than 0")
+    .trim().escape().notEmpty().withMessage("Quantity of items sold is required")
+    .isInt({ min: 1 }).withMessage("Quantity of items sold must be greater than 0")
     .toInt();
 
-export const saleRules: ValidationRules = {
+export const saleRules = {
     filter: [
         query("product")
             .optional({ checkFalsy: true }).trim().escape().bail()
@@ -26,13 +23,15 @@ export const saleRules: ValidationRules = {
                         name: { [Op.like]: `%${product}%` }
                     }
                 });
-                if (rows.length) { return rows.map( (row) => row.id) }
-                else { return null }
+                if (rows.length) {
+                    return rows.map( (row) => row.id);
+                }
+                else {
+                    return null;
+                }
             }),
-        dateFrom,
-        dateTo,
-        ...sorting,
-        ...pagination,
+        
+        ...filters,
     ],
 
     create: [
@@ -62,7 +61,8 @@ export const saleRules: ValidationRules = {
                 }
                 return true;
             }),
-        quantity
+        
+        quantity,
     ],
 
     destroy: [

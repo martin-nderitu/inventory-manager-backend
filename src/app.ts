@@ -67,7 +67,8 @@ app.use(session({
 app.use("/static", express.static(path.join(__dirname, "..", "build", "static")));
 app.use("/api/v1", router);
 
-app.get("*", (req: Request, res: Response) => {     // serve react build
+// serve react build
+app.get("*", (req: Request, res: Response) => {
     res.sendFile(path.join(__dirname, "..", "build", "index.html"));
 });
 

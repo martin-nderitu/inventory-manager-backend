@@ -1,12 +1,9 @@
-import {query, body, ValidationChain} from "express-validator";
+import {query, body} from "express-validator";
 import Sequelize from "sequelize";
-import db from "../../models/index.js";
-import {pagination} from "./common/pagination.js";
-import {sorting} from "./common/sorting.js";
-import {dateFrom, dateTo} from "./common/filters.js";
-import {destroy} from "./common/destroy.js";
-import {read} from "./common/read.js";
-import {Middleware} from "express-validator/src/base";
+import db from "../../../models/index.js";
+import {destroy} from "./libs/destroy.js";
+import {read} from "./libs/read.js";
+import filters from "./libs/filters.js";
 
 const Op = Sequelize.Op;
 const {Product, Transfer} = db;
@@ -25,10 +22,8 @@ export const transferRules = {
                 if (rows.length) { return rows.map( (row) => row.id) }
                 else { return null }
             }),
-        dateFrom,
-        dateTo,
-        ...sorting,
-        ...pagination,
+        
+        ...filters,
     ],
 
     create: [
@@ -43,8 +38,8 @@ export const transferRules = {
             }),
 
         body("quantity")
-            .trim().escape().notEmpty().withMessage("Quantity of items purchased is required")
-            .isInt({ min: 1 }).withMessage("Quantity of items purchased must be greater than 0")
+            .trim().escape().notEmpty().withMessage("Quantity of items to transfer is required")
+            .isInt({ min: 1 }).withMessage("Quantity of items to transfer must be greater than 0")
             .toInt(),
 
         body("source")

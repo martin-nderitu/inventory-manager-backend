@@ -1,13 +1,10 @@
 import {query, body} from "express-validator";
-import toTitleCase from "../../libs/toTitleCase.js";
-import db from "../../models/index.js";
-import {pagination} from "./common/pagination.js";
-import {sorting} from "./common/sorting.js";
-import {dateFrom, dateTo} from "./common/filters.js";
-import {destroy} from "./common/destroy.js";
-import {read} from "./common/read.js";
-import {ValidationRules} from "./index.js";
-import itemExists from "./common/itemExists.js";
+import db from "../../../models/index.js";
+import {destroy} from "./libs/destroy.js";
+import {read} from "./libs/read.js";
+import itemExists from "./libs/itemExists.js";
+import toTitleCase from "../../../libs/toTitleCase.js";
+import filters from "./libs/filters.js";
 
 const {Supplier} = db;
 
@@ -54,17 +51,15 @@ const commonRules = [
         }),
 ];
 
-export const supplierRules: ValidationRules = {
+export const supplierRules = {
     filter: [
         query("name")
             .optional({ checkFalsy: true }).trim().escape(),
-        dateFrom,
-        dateTo,
-        ...sorting,
-        ...pagination,
+        
+        ...filters,
     ],
 
-    create: [ ...commonRules ],
+    create: commonRules,
 
     read: [
         read("Supplier"),
@@ -80,6 +75,7 @@ export const supplierRules: ValidationRules = {
                 }
                 return true;
             }),
+        
         ...commonRules,
     ],
 

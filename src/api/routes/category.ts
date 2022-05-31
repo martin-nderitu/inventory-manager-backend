@@ -1,8 +1,8 @@
 import { default as express } from "express";
 import * as categoryController from "../controllers/category.js";
-import {categoryRules} from "../../middlewares/validationRules/category.js";
-import {validate} from "../../middlewares/validate.js";
-import filter from "../../middlewares/filter.js";
+import {categoryRules} from "../../middlewares/validators/rules/category.js";
+import {validate} from "../../middlewares/validators/validate.js";
+import filter from "../../middlewares/filters/index.js";
 
 export const router = express.Router();
 

@@ -1,19 +1,17 @@
 import {query, body} from "express-validator";
 import Sequelize from "sequelize";
-import toTitleCase from "../../libs/toTitleCase.js";
-import db from "../../models/index.js";
-import {pagination} from "./common/pagination.js";
-import {sorting} from "./common/sorting.js";
-import {dateFrom, dateTo} from "./common/filters.js";
-import {description} from "./common/description.js";
-import {destroy} from "./common/destroy.js";
-import {read} from "./common/read.js";
-import {ValidationRules} from "./index.js";
-import itemExists from "./common/itemExists.js";
+import db from "../../../models/index.js";
+import {destroy} from "./libs/destroy.js";
+import {read} from "./libs/read.js";
+import itemExists from "./libs/itemExists.js";
+import {description} from "./libs/description.js";
+import toTitleCase from "../../../libs/toTitleCase.js";
+import filters from "./libs/filters.js";
 
 const Op = Sequelize.Op;
 const {Category, Product} = db;
 
+// categoryId, name, description, unitCost, unitPrice, store, counter
 const commonRules = [
     body("categoryId")
         .trim().escape().notEmpty().withMessage("Category id is required").bail()
@@ -39,6 +37,8 @@ const commonRules = [
         .customSanitizer((name: string) => {
             return toTitleCase(name);
         }),
+
+    description,
 
     body("unitCost")
         .trim().escape().notEmpty().withMessage("Unit cost is required")
@@ -71,11 +71,14 @@ const commonRules = [
         .toInt(),
 ];
 
-export const productRules: ValidationRules = {
+export const productRules = {
     filter: [
         query("name")
             .optional({ checkFalsy: true }).trim().escape(),
-        query("category")   // category name
+
+        // If category name in req.query, search for similar names and replace req.query with an array of their ids.
+        // This array will be used to filter for products with the returned categories.
+        query("category")
             .optional().trim().escape().bail()
             .customSanitizer( async (categoryName: string) => {
                 const rows = await Category.findAll({
@@ -83,16 +86,18 @@ export const productRules: ValidationRules = {
                         name: { [Op.like]: `%${categoryName}%` }
                     }
                 });
-                if (rows.length) { return rows.map( (row) => row.id) }
-                else { return null }
+                if (rows.length) {
+                    return rows.map( (row) => row.id);
+                }
+                else {
+                    return null;
+                }
             }),
-        dateFrom,
-        dateTo,
-        ...sorting,
-        ...pagination,
+
+        ...filters,
     ],
 
-    create: [ ...commonRules, description, ],
+    create: commonRules,
 
     read: [
         read("Product"),
@@ -108,8 +113,8 @@ export const productRules: ValidationRules = {
                 }
                 return true;
             }),
+
         ...commonRules,
-        description,
     ],
 
     destroy: [

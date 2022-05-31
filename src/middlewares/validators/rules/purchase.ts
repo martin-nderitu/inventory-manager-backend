@@ -1,12 +1,9 @@
 import {query, body} from "express-validator";
 import Sequelize from "sequelize";
-import db from "../../models/index.js";
-import {pagination} from "./common/pagination.js";
-import {sorting} from "./common/sorting.js";
-import {dateFrom, dateTo} from "./common/filters.js";
-import {destroy} from "./common/destroy.js";
-import {read} from "./common/read.js";
-import {ValidationRules} from "./index.js";
+import db from "../../../models/index.js";
+import {destroy} from "./libs/destroy.js";
+import {read} from "./libs/read.js";
+import filters from "./libs/filters.js";
 
 const Op = Sequelize.Op;
 const {Purchase, Supplier, Product} = db;
@@ -63,7 +60,7 @@ const commonRules = [
         .isIn(["store", "counter"]).withMessage("Valid locations are 'store' or 'counter'"),
 ];
 
-export const purchaseRules: ValidationRules = {
+export const purchaseRules = {
     filter: [
         query("supplier")
             .optional({ checkFalsy: true }).trim().escape().bail()
@@ -73,8 +70,12 @@ export const purchaseRules: ValidationRules = {
                         name: { [Op.like]: `%${supplier}%` }
                     }
                 });
-                if (rows.length) { return rows.map( (row) => row.id) }
-                else { return null }
+                if (rows.length) {
+                    return rows.map( (row) => row.id);
+                }
+                else {
+                    return null;
+                }
             }),
 
         query("product")
@@ -85,16 +86,18 @@ export const purchaseRules: ValidationRules = {
                         name: { [Op.like]: `%${product}%` }
                     }
                 });
-                if (rows.length) { return rows.map( (row) => row.id) }
-                else { return null }
+                if (rows.length) {
+                    return rows.map( (row) => row.id);
+                }
+                else {
+                    return null;
+                }
             }),
-        dateFrom,
-        dateTo,
-        ...sorting,
-        ...pagination,
+        
+        ...filters,
     ],
 
-    create: [ ...commonRules ],
+    create: commonRules,
 
     read: [
         read("Purchase"),
@@ -110,6 +113,7 @@ export const purchaseRules: ValidationRules = {
                 }
                 return true;
             }),
+        
         ...commonRules
     ],
 
