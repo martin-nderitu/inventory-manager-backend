@@ -6,8 +6,10 @@ export const destroy = <T>(
     fields: string | string[] = "id"
 ) => {
     return param(fields)
-        .trim().escape().notEmpty().withMessage(`${name} id(s) is/are required`)
-        .bail().customSanitizer( (value: string) => value.split(","))
+        .trim().escape().notEmpty()
+        .withMessage(`${name} id(s) is/are required`)   // ids can be a single id or comma separated string of ids
+        .bail()
+        .customSanitizer( (value: string) => value.split(","))
         .custom(async (value: string[]) => {
             for (const id of value) {
                 const response = await callback(id);

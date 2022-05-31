@@ -4,6 +4,7 @@ import db from "../../../models/index.js";
 import {destroy} from "./libs/destroy.js";
 import {read} from "./libs/read.js";
 import filters from "./libs/filters.js";
+import {queryWithFilter} from "./libs/queryWithFilter.js";
 
 const Op = Sequelize.Op;
 const {Product, Transfer} = db;
@@ -11,17 +12,14 @@ const {Product, Transfer} = db;
 
 export const transferRules = {
     filter: [
-        query("product")
-            .optional({ checkFalsy: true }).trim().escape().bail()
-            .customSanitizer( async (product: string) => {
-                const rows = await Product.findAll({
-                    where: {
-                        name: { [Op.like]: `%${product}%` }
-                    }
-                });
-                if (rows.length) { return rows.map( (row) => row.id) }
-                else { return null }
-            }),
+        queryWithFilter(
+            "product",
+            async (productName) => await Product.findAll({
+                where: {
+                    name: { [Op.like]: `%${productName}%` }
+                }
+            })
+        ),
         
         ...filters,
     ],

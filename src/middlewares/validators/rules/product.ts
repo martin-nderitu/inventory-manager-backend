@@ -7,6 +7,7 @@ import itemExists from "./libs/itemExists.js";
 import {description} from "./libs/description.js";
 import toTitleCase from "../../../libs/toTitleCase.js";
 import filters from "./libs/filters.js";
+import {queryWithFilter} from "./libs/queryWithFilter.js";
 
 const Op = Sequelize.Op;
 const {Category, Product} = db;
@@ -76,24 +77,15 @@ export const productRules = {
         query("name")
             .optional({ checkFalsy: true }).trim().escape(),
 
-        // If category name in req.query, search for similar names and replace req.query with an array of their ids.
-        // This array will be used to filter for products with the returned categories.
-        query("category")
-            .optional().trim().escape().bail()
-            .customSanitizer( async (categoryName: string) => {
-                const rows = await Category.findAll({
-                    where: {
-                        name: { [Op.like]: `%${categoryName}%` }
-                    }
-                });
-                if (rows.length) {
-                    return rows.map( (row) => row.id);
+        queryWithFilter(
+            "category",
+            async (categoryName) => await Category.findAll({
+                where: {
+                    name: { [Op.like]: `%${categoryName}%` }
                 }
-                else {
-                    return null;
-                }
-            }),
-
+            })
+        ),
+        
         ...filters,
     ],
 

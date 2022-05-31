@@ -4,6 +4,7 @@ import db from "../../../models/index.js";
 import {destroy} from "./libs/destroy.js";
 import {read} from "./libs/read.js";
 import filters from "./libs/filters.js";
+import {queryWithFilter} from "./libs/queryWithFilter.js";
 
 const Op = Sequelize.Op;
 const {Purchase, Supplier, Product} = db;
@@ -62,37 +63,23 @@ const commonRules = [
 
 export const purchaseRules = {
     filter: [
-        query("supplier")
-            .optional({ checkFalsy: true }).trim().escape().bail()
-            .customSanitizer( async (supplier: string) => {
-                const rows = await Supplier.findAll({
-                    where: {
-                        name: { [Op.like]: `%${supplier}%` }
-                    }
-                });
-                if (rows.length) {
-                    return rows.map( (row) => row.id);
+        queryWithFilter(
+            "supplier",
+            async (supplierName) => await Supplier.findAll({
+                where: {
+                    name: { [Op.like]: `%${supplierName}%` }
                 }
-                else {
-                    return null;
-                }
-            }),
+            })
+        ),
 
-        query("product")
-            .optional({ checkFalsy: true }).trim().escape().bail()
-            .customSanitizer( async (product: string) => {
-                const rows = await Product.findAll({
-                    where: {
-                        name: { [Op.like]: `%${product}%` }
-                    }
-                });
-                if (rows.length) {
-                    return rows.map( (row) => row.id);
+        queryWithFilter(
+            "product",
+            async (productName) => await Product.findAll({
+                where: {
+                    name: { [Op.like]: `%${productName}%` }
                 }
-                else {
-                    return null;
-                }
-            }),
+            })
+        ),
         
         ...filters,
     ],
